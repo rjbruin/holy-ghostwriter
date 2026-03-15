@@ -15,6 +15,11 @@ const APP_ICON_PATH = process.platform === 'darwin'
     ? path.join(__dirname, 'icon.ico')
     : path.join(__dirname, 'favicon.svg');
 
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
+  app.quit();
+}
+
 function getAppIcon() {
   try {
     if (!fs.existsSync(APP_ICON_PATH)) return null;
@@ -206,6 +211,10 @@ function setupContextMenu() {
 }
 
 app.whenReady().then(async () => {
+  if (!hasSingleInstanceLock) {
+    return;
+  }
+
   if (process.argv.includes('--quit')) {
     app.quit();
     return;
@@ -237,6 +246,19 @@ app.whenReady().then(async () => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
+});
+
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.show();
+    mainWindow.focus();
+    return;
+  }
+
+  createMainWindow();
 });
 
 app.on('window-all-closed', () => {

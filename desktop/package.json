@@ -20,7 +20,8 @@
     "productName": "Holy Ghostwriter",
     "files": [
       "main.js",
-      "favicon.svg"
+      "favicon.svg",
+      "icon.icns"
     ],
     "extraResources": [
       {
@@ -32,6 +33,7 @@
       }
     ],
     "mac": {
+      "icon": "icon.icns",
       "target": [
         "dmg"
       ],

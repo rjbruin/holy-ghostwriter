@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, nativeImage } = require('electron');
 const { spawn } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
@@ -8,7 +9,20 @@ let flaskProcess = null;
 
 const ROOT = path.resolve(__dirname, '..');
 const APP_URL = 'http://127.0.0.1:5010';
-const APP_ICON_PATH = path.join(__dirname, 'favicon.svg');
+const APP_ICON_PATH = process.platform === 'darwin'
+  ? path.join(__dirname, 'icon.icns')
+  : path.join(__dirname, 'favicon.svg');
+
+function getAppIcon() {
+  try {
+    if (!fs.existsSync(APP_ICON_PATH)) return null;
+    const image = nativeImage.createFromPath(APP_ICON_PATH);
+    if (image.isEmpty()) return null;
+    return image;
+  } catch {
+    return null;
+  }
+}
 
 function checkServerRunning() {
   return new Promise((resolve) => {
@@ -64,6 +78,9 @@ function startFlask() {
     stdio: 'ignore',
     detached: false,
   });
+
+  flaskProcess.on('error', () => {
+  });
 }
 
 function stopFlask() {
@@ -79,16 +96,22 @@ function createMainWindow() {
     return;
   }
 
-  mainWindow = new BrowserWindow({
+  const appIcon = getAppIcon();
+  const windowOptions = {
     width: 1280,
     height: 900,
-    icon: APP_ICON_PATH,
     webPreferences: {
       contextIsolation: true,
     },
-  });
+  };
 
-  mainWindow.loadURL(APP_URL);
+  if (process.platform !== 'darwin' && appIcon) {
+    windowOptions.icon = appIcon;
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
+
+  mainWindow.loadURL('data:text/html;charset=utf-8,<html><body style="font-family: sans-serif; padding: 24px;">Holy Ghostwriter wordt gestart...</body></html>');
   mainWindow.webContents.on('context-menu', () => {
     const contextTemplate = [
       { role: 'undo' },
@@ -104,6 +127,14 @@ function createMainWindow() {
   });
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  loadMainAppUrl();
+}
+
+function loadMainAppUrl() {
+  if (!mainWindow) return;
+  mainWindow.loadURL(APP_URL).catch(() => {
   });
 }
 
@@ -179,17 +210,27 @@ app.whenReady().then(async () => {
   }
 
   if (process.platform === 'darwin' && app.dock) {
-    app.dock.setIcon(APP_ICON_PATH);
-  }
-
-  const alreadyRunning = await checkServerRunning();
-  if (!alreadyRunning) {
-    startFlask();
-    await waitForServerReady();
+    const appIcon = getAppIcon();
+    if (appIcon) {
+      try {
+        app.dock.setIcon(appIcon);
+      } catch {
+      }
+    }
   }
 
   createMainWindow();
   setupContextMenu();
+
+  const alreadyRunning = await checkServerRunning();
+  if (alreadyRunning) {
+  } else {
+    startFlask();
+    const ready = await waitForServerReady();
+    if (ready) {
+      loadMainAppUrl();
+    }
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

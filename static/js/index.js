@@ -403,6 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const sermon = await api('/api/sermons', { method: 'POST', body: JSON.stringify({}) });
         const onboardingSuffix = forceOnboarding ? '?onboarding' : '';
+        if (forceOnboarding) {
+          window.sessionStorage.setItem('holyGhostwriter.sermonOnboardingPending', '1');
+        }
         window.location.href = `/sermon/${sermon.id}${onboardingSuffix}`;
       } catch (err) {
         handleAppError(err, 'Nieuwe preek maken mislukt');

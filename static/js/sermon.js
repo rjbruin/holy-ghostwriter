@@ -536,8 +536,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveFields().catch((error) => handleAppError(error, 'Automatisch opslaan mislukt'));
   }, 10000);
 
-  const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
+  const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding')
+    || window.sessionStorage.getItem('holyGhostwriter.sermonOnboardingPending') === '1';
   if (forceOnboarding) {
+    window.sessionStorage.removeItem('holyGhostwriter.sermonOnboardingPending');
     let tourOverlay = null;
     let tourBubble = null;
     let tourStepIndex = 0;

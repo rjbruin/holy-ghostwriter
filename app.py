@@ -121,6 +121,34 @@ storage.bootstrap(
 jobs_state_lock = threading.RLock()
 jobs_event_bus = {}
 worker_queue = queue.Queue()
+MAX_EVENTS_PER_JOB = 400
+MAX_DELTA_EVENT_CHARS = 24000
+JOB_EVENT_RETENTION_SECONDS = 120
+MAX_TRACKED_JOB_EVENT_STATES = 600
+
+
+def prune_job_event_bus_locked(now_ts: float = None):
+    now_ts = now_ts if now_ts is not None else time.time()
+    stale_job_ids = []
+
+    for job_id, state in jobs_event_bus.items():
+        completed_at = state.get("completed_at")
+        if completed_at and (now_ts - completed_at) > JOB_EVENT_RETENTION_SECONDS:
+            stale_job_ids.append(job_id)
+
+    for job_id in stale_job_ids:
+        jobs_event_bus.pop(job_id, None)
+
+    if len(jobs_event_bus) <= MAX_TRACKED_JOB_EVENT_STATES:
+        return
+
+    overflow = len(jobs_event_bus) - MAX_TRACKED_JOB_EVENT_STATES
+    ordered = sorted(
+        jobs_event_bus.items(),
+        key=lambda item: item[1].get("completed_at") or item[1].get("created_at") or 0,
+    )
+    for job_id, _ in ordered[:overflow]:
+        jobs_event_bus.pop(job_id, None)
 
 
 def now_iso():
@@ -397,14 +425,38 @@ def analyze_usage_and_persist(settings: dict):
 
 def push_job_event(job_id: str, event: dict):
     with jobs_state_lock:
-        state = jobs_event_bus.setdefault(job_id, {"events": [], "done": False})
-        state["events"].append(event)
+        state = jobs_event_bus.setdefault(
+            job_id,
+            {"events": [], "done": False, "created_at": time.time(), "completed_at": None},
+        )
+        events = state["events"]
+
+        if event.get("type") == "delta" and events and events[-1].get("type") == "delta":
+            previous = events[-1].get("content", "")
+            incoming = event.get("content", "")
+            merged = f"{previous}{incoming}"
+            if len(merged) <= MAX_DELTA_EVENT_CHARS:
+                events[-1]["content"] = merged
+            else:
+                events.append(event)
+        else:
+            events.append(event)
+
+        if len(events) > MAX_EVENTS_PER_JOB:
+            state["events"] = events[-MAX_EVENTS_PER_JOB:]
+
+        prune_job_event_bus_locked()
 
 
 def complete_job_events(job_id: str):
     with jobs_state_lock:
-        state = jobs_event_bus.setdefault(job_id, {"events": [], "done": False})
+        state = jobs_event_bus.setdefault(
+            job_id,
+            {"events": [], "done": False, "created_at": time.time(), "completed_at": None},
+        )
         state["done"] = True
+        state["completed_at"] = time.time()
+        prune_job_event_bus_locked()
 
 
 def calc_cost_usd(model_entry: dict, usage: dict):
@@ -981,22 +1033,36 @@ def api_stream_job(job_id):
 
     def event_stream():
         cursor = 0
-        while True:
-            with jobs_state_lock:
-                state = jobs_event_bus.get(job_id, {"events": [], "done": False})
-                events = state["events"]
-                done = state["done"]
+        try:
+            while True:
+                pending_event = None
+                done = False
 
-                if cursor < len(events):
-                    event = events[cursor]
-                    cursor += 1
-                    yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+                with jobs_state_lock:
+                    state = jobs_event_bus.get(job_id)
+                    if state is None:
+                        done = True
+                    else:
+                        events = state["events"]
+                        done = state["done"]
+
+                        if cursor < len(events):
+                            pending_event = events[cursor]
+                            cursor += 1
+
+                if pending_event is not None:
+                    yield f"data: {json.dumps(pending_event, ensure_ascii=False)}\n\n"
                     continue
 
                 if done:
                     break
 
-            time.sleep(0.15)
+                time.sleep(0.15)
+        finally:
+            with jobs_state_lock:
+                state = jobs_event_bus.get(job_id)
+                if state and state.get("done"):
+                    jobs_event_bus.pop(job_id, None)
 
     return Response(event_stream(), content_type="text/event-stream; charset=utf-8")
 

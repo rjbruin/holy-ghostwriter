@@ -21,7 +21,8 @@
     "files": [
       "main.js",
       "favicon.svg",
-      "icon.icns"
+      "icon.icns",
+      "icon.ico"
     ],
     "extraResources": [
       {
@@ -40,6 +41,7 @@
       "category": "public.app-category.productivity"
     },
     "win": {
+      "icon": "icon.ico",
       "target": [
         "nsis"
       ]

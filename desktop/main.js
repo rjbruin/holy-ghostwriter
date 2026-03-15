@@ -11,7 +11,9 @@ const ROOT = path.resolve(__dirname, '..');
 const APP_URL = 'http://127.0.0.1:5010';
 const APP_ICON_PATH = process.platform === 'darwin'
   ? path.join(__dirname, 'icon.icns')
-  : path.join(__dirname, 'favicon.svg');
+  : process.platform === 'win32'
+    ? path.join(__dirname, 'icon.ico')
+    : path.join(__dirname, 'favicon.svg');
 
 function getAppIcon() {
   try {

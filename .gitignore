@@ -8,6 +8,7 @@ desktop/node_modules/
 desktop/dist/
 desktop/server-dist/
 desktop/pyibuild/
+desktop/build-icons/
 dist/
 build/
 .DS_Store

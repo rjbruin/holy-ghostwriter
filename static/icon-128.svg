@@ -1,24 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Holy Ghostwriter app icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Holy Ghostwriter logo">
+  <rect width="128" height="128" rx="26" fill="#f6f3ef"/>
   <g fill="none" stroke="#38b6ff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="22" y="22" width="84" height="84" rx="12"/>
+    <line x1="42" y1="10" x2="42" y2="24"/>
+    <line x1="64" y1="10" x2="64" y2="24"/>
+    <line x1="86" y1="10" x2="86" y2="24"/>
 
-    <line x1="42" y1="10" x2="42" y2="22"/>
-    <line x1="64" y1="10" x2="64" y2="22"/>
-    <line x1="86" y1="10" x2="86" y2="22"/>
+    <line x1="42" y1="104" x2="42" y2="118"/>
+    <line x1="64" y1="104" x2="64" y2="118"/>
+    <line x1="86" y1="104" x2="86" y2="118"/>
 
-    <line x1="42" y1="106" x2="42" y2="118"/>
-    <line x1="64" y1="106" x2="64" y2="118"/>
-    <line x1="86" y1="106" x2="86" y2="118"/>
+    <line x1="10" y1="42" x2="24" y2="42"/>
+    <line x1="10" y1="64" x2="24" y2="64"/>
+    <line x1="10" y1="86" x2="24" y2="86"/>
 
-    <line x1="10" y1="42" x2="22" y2="42"/>
-    <line x1="10" y1="64" x2="22" y2="64"/>
-    <line x1="10" y1="86" x2="22" y2="86"/>
+    <line x1="104" y1="42" x2="118" y2="42"/>
+    <line x1="104" y1="64" x2="118" y2="64"/>
+    <line x1="104" y1="86" x2="118" y2="86"/>
+  </g>
 
-    <line x1="106" y1="42" x2="118" y2="42"/>
-    <line x1="106" y1="64" x2="118" y2="64"/>
-    <line x1="106" y1="86" x2="118" y2="86"/>
+  <rect x="24" y="24" width="80" height="80" rx="18" fill="#38b6ff" stroke="#38b6ff" stroke-width="8"/>
 
-    <line x1="64" y1="38" x2="64" y2="90"/>
-    <line x1="48" y1="54" x2="80" y2="54"/>
+  <g fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="64" y1="40" x2="64" y2="88"/>
+    <line x1="46" y1="58" x2="82" y2="58"/>
   </g>
 </svg>

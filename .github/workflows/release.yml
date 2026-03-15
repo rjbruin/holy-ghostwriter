@@ -44,7 +44,7 @@ jobs:
 
       - name: Install Electron dependencies
         working-directory: desktop
-        run: npm ci
+        run: npm install
 
       - name: Build macOS installer (.dmg)
         working-directory: desktop
@@ -91,7 +91,7 @@ jobs:
 
       - name: Install Electron dependencies
         working-directory: desktop
-        run: npm ci
+        run: npm install
 
       - name: Build Windows installer (.exe)
         working-directory: desktop

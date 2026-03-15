@@ -1,0 +1,135 @@
+name: Build & Release
+
+# Trigger on version tags: git tag v1.2.3 && git push origin v1.2.3
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write   # needed to create/upload GitHub Release assets
+
+jobs:
+  # ──────────────────────────────────────────────
+  # macOS build → .dmg
+  # ──────────────────────────────────────────────
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Bundle Flask server with PyInstaller (macOS)
+        run: |
+          pyinstaller desktop/server.spec \
+            --distpath desktop/server-dist \
+            --workpath desktop/pyibuild \
+            --noconfirm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Electron dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build macOS installer (.dmg)
+        working-directory: desktop
+        run: npx electron-builder --mac --publish never
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-installer
+          path: desktop/dist/*.dmg
+          retention-days: 7
+
+  # ──────────────────────────────────────────────
+  # Windows build → .exe (NSIS installer)
+  # ──────────────────────────────────────────────
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Bundle Flask server with PyInstaller (Windows)
+        run: |
+          pyinstaller desktop/server.spec `
+            --distpath desktop/server-dist `
+            --workpath desktop/pyibuild `
+            --noconfirm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Electron dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build Windows installer (.exe)
+        working-directory: desktop
+        run: npx electron-builder --win --publish never
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-installer
+          path: desktop/dist/*.exe
+          retention-days: 7
+
+  # ──────────────────────────────────────────────
+  # Create GitHub Release and attach both installers
+  # ──────────────────────────────────────────────
+  release:
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-installer
+          path: artifacts/mac
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: win-installer
+          path: artifacts/win
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/mac/*.dmg
+            artifacts/win/*.exe

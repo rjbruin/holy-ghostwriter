@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "chat_message": { "type": "string" },
+    "field_updates": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["chat_message", "field_updates"],
+  "additionalProperties": false
+}

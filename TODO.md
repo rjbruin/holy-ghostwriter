@@ -1,0 +1,2 @@
+[x] I've initialized a Git repo. Stage all the relevant files. Make sure not to add the API key file or any files that are specific to my install, like data files, but be sure to retain data that needs to be present in a first install. Also do not delete any files from disk. After that, I'll do the commit and pushing.
+[x] For selecting a model, instead of radio buttons use the tiles themselves: make them selectable, and communicate which is selecting by e.g. making the outline of the tile light up.

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Help{% endblock %}
+{% block body %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">Help</h1>
+  <p>Welkom bij Holy Ghostwriter. Hieronder vind je een korte handleiding.</p>
+
+  <h2 class="h5 mt-4">1. Starten</h2>
+  <ul>
+    <li>Open de homepage en maak een nieuw preekproject.</li>
+    <li>Vul je bijbelreferentie en inhoudsbeschrijving in.</li>
+    <li>Gebruik de knoppen om ideeën of een volledige preek te genereren.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">2. Instellingen</h2>
+  <ul>
+    <li>Stel je OpenRouter API key in.</li>
+    <li>Kies en beheer AI modellen.</li>
+    <li>Pas prompts aan voor stijl en voorkeuren.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">3. Veilig gebruik</h2>
+  <p>
+    Deel geen persoonsgegevens of vertrouwelijke pastorale informatie in AI prompts.
+    Gebruik altijd je eigen oordeel en controleer inhoud theologisch en pastoraal.
+  </p>
+
+  <h2 class="h5 mt-4">4. Problemen tegengekomen?</h2>
+  <p class="mb-2">
+    Loop je vast of heb je een bug gevonden? Meld het dan via GitHub issues of neem contact op via e-mail.
+  </p>
+  <ul>
+    <li><a href="https://github.com/rjbruin/holy-ghostwriter/issues" target="_blank" rel="noopener">Meld een issue op GitHub</a></li>
+    <li><a href="mailto:holyghostwriter.copilot834@passinbox.com">Stuur een e-mail naar support</a></li>
+  </ul>
+
+  <h2 class="h5 mt-4">5. Veelgestelde vragen (FAQ)</h2>
+  <div class="mb-3">
+    <p class="mb-1"><strong>Waarom zie ik een fout over API key of autorisatie?</strong></p>
+    <p class="mb-2">Controleer in Instellingen of je OpenRouter API key correct is ingevuld en actief is.</p>
+
+    <p class="mb-1"><strong>Waarom krijg ik meldingen over credits of limieten?</strong></p>
+    <p class="mb-2">Je OpenRouter-account heeft mogelijk onvoldoende credits of een rate limit bereikt. Voeg credits toe of probeer later opnieuw.</p>
+
+    <p class="mb-1"><strong>Hoe kies ik het juiste model?</strong></p>
+    <p class="mb-2">Vergelijk kosten en ondersteunde bestandstypes in Instellingen. Kies een model dat past bij je budget en of je PDF/afbeeldingen wilt gebruiken.</p>
+
+    <p class="mb-1"><strong>Welke contextbestanden kan ik uploaden?</strong></p>
+    <p class="mb-2">Tekstbestanden zijn altijd geschikt. PDF en afbeeldingen werken alleen bij modellen die deze typen ondersteunen.</p>
+
+    <p class="mb-1"><strong>Wordt mijn onboarding opnieuw gestart?</strong></p>
+    <p class="mb-2">Onboarding start wanneer je de homepage of preekpagina opent met de parameter <code>?onboarding</code> in de URL.</p>
+
+    <p class="mb-1"><strong>Hoe betrouwbaar is de gegenereerde inhoud?</strong></p>
+    <p class="mb-0">Gebruik AI-output als hulpmiddel. Controleer altijd inhoud, bijbeluitleg en toon voordat je publiceert of preekt.</p>
+  </div>
+
+  <a href="{{ url_for('index_page') }}" class="btn btn-outline-secondary btn-sm mt-3">Terug naar home</a>
+</div>
+{% endblock %}

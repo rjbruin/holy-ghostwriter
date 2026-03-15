@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Preek bewerken{% endblock %}
+{% block body %}
+<div class="container-fluid px-3 py-3 full-height">
+  <div class="row g-3 h-100">
+    <div class="col-lg-7 h-100">
+      <div class="card card-soft h-100 overflow-auto">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ url_for('index_page') }}" class="btn btn-outline-secondary btn-sm">← Terug</a>
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#settingsModal">⚙️</button>
+          </div>
+
+          <div id="sermonTitleSection" class="mb-3">
+            <label class="form-label">Titel</label>
+            <input id="titleInput" class="form-control" value="{{ sermon.title }}">
+          </div>
+
+          <div id="sermonBibleSection" class="mb-3">
+            <label class="form-label">Bijbeltekst (referentie)</label>
+            <div id="sermonBibleRefSection" class="input-group">
+              <input id="bibleRefInput" class="form-control" value="{{ sermon.bible_reference }}" placeholder="Bijv. Mattheüs 4:12-15">
+              <button id="fetchBibleBtn" class="btn btn-outline-primary">Laad bijbeltekst</button>
+            </div>
+            <div id="bibleTextDisplay" class="bible-display mt-2">{{ sermon.bible_text }}</div>
+          </div>
+
+          <div id="sermonNotesSection" class="mb-3">
+            <label class="form-label">Inhoudsbeschrijving</label>
+            <textarea id="contentNotesInput" class="form-control" rows="7">{{ sermon.content_notes }}</textarea>
+          </div>
+
+          <div id="sermonContextFilesSection" class="mb-3">
+            <label class="form-label">Contextbestanden</label>
+            <div class="input-group mb-2">
+              <input id="contextFileInput" type="file" class="form-control" accept=".txt,.md,.csv,.json,.xml,.html,.htm,.log,.pdf,image/*">
+              <button id="addContextFileBtn" class="btn btn-outline-secondary" type="button">Toevoegen</button>
+            </div>
+            <div id="contextFilesList" class="d-flex flex-column gap-2"></div>
+          </div>
+
+          <div id="sermonPreekSection">
+          <div class="mb-2 d-flex justify-content-between align-items-center">
+            <label class="form-label mb-0">Preek</label>
+            <button id="exportBtn" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#exportModal">Exporteren</button>
+          </div>
+          <div id="sermonEditor"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5 h-100">
+      <div id="sermonChatSection" class="card card-soft h-100 d-flex flex-column">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <strong id="chatbotName" data-model-slug="{{ model_slug }}" data-bs-toggle="tooltip" title="{{ model_slug }}">{{ model_name }}</strong>
+            <span id="chatbotInfoIcon" class="ms-2 text-muted" data-model-slug="{{ model_slug }}" data-bs-toggle="tooltip" title="{{ model_slug }}">ⓘ</span>
+          </div>
+          <div class="small text-muted text-end">
+            Kosten: $<span id="costTotal">{{ '%.2f'|format((sermon.total_cost_usd or 0)|float) }}</span>
+          </div>
+        </div>
+
+        <div class="px-3 pt-3">
+          <div id="sermonActionButtonsSection" class="d-flex flex-wrap gap-2">
+            <button id="ideasBtn" class="btn btn-sm btn-outline-primary action-btn">Genereer ideeën</button>
+            <button id="sermonActionBtn" class="btn btn-sm btn-primary action-btn">Genereer preek</button>
+          </div>
+        </div>
+
+        <div id="chatMessages" class="chat-messages flex-grow-1 px-3 py-2"></div>
+
+        <div class="p-3 border-top">
+          <div class="input-group">
+            <input id="chatInput" class="form-control" placeholder="Typ je bericht...">
+            <button id="chatSendBtn" class="btn btn-primary">Verstuur</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+  <div id="contextToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div id="contextToastText" class="toast-body"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="unsupportedFileTypeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bestandstype niet ondersteund door model</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="unsupportedFileTypeText" class="mb-0"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export voorbeeld</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="exportPreview" class="markdown-preview"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="downloadDocxBtn" class="btn btn-primary">Download DOCX</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="initial-sermon" type="application/json">{{ sermon | tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sermon.js') }}"></script>
+{% endblock %}

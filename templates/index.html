@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Holy Ghostwriter{% endblock %}
+{% block body %}
+<div class="container py-4">
+  {% set title_direction = 'asc' if sort_by != 'title' or direction == 'desc' else 'desc' %}
+  {% set bible_direction = 'asc' if sort_by != 'bible_reference' or direction == 'desc' else 'desc' %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 d-flex align-items-center gap-2">
+        <img src="{{ url_for('static', filename='icon-128.svg') }}" alt="Holy Ghostwriter icoon" class="app-title-icon">
+        <span>Holy Ghostwriter</span>
+      </h1>
+      <p class="text-muted mb-0">Helpt dominees om meer te ontspannen sinds 2026</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button id="indexSettingsBtn" class="btn btn-outline-secondary position-relative" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Instellingen">
+        ⚙️
+        <span id="updateAvailableIcon" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark d-none">!</span>
+      </button>
+      <button id="newSermonBtn" class="btn btn-primary">Nieuwe preek</button>
+    </div>
+  </div>
+
+  <div id="sermonListCard" class="card card-soft">
+    <div class="card-body p-0">
+      <table class="table mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>
+              <a class="text-decoration-none text-reset" href="{{ url_for('index_page', sort='title', direction=title_direction) }}">Titel</a>
+            </th>
+            <th>
+              <a class="text-decoration-none text-reset" href="{{ url_for('index_page', sort='bible_reference', direction=bible_direction) }}">Bijbeltekst</a>
+            </th>
+            <th>Laatst bijgewerkt</th>
+            <th class="text-end">Acties</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sermon in sermons %}
+          <tr>
+            <td>
+              {{ sermon.title }}
+              {% if sermon.sermon_generated %}
+              <span class="badge text-bg-success ms-2">Preek gereed</span>
+              {% endif %}
+            </td>
+            <td>{{ sermon.bible_reference or '-' }}</td>
+            <td>{{ sermon.updated_at_display }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('sermon_page', sermon_id=sermon.id) }}">Bewerken</a>
+              <button class="btn btn-sm btn-outline-secondary export-sermon-btn" data-sermon-id="{{ sermon.id }}" data-sermon-title="{{ sermon.title }}">Exporteren</button>
+              <button class="btn btn-sm btn-outline-danger delete-sermon-btn" data-sermon-id="{{ sermon.id }}">Verwijderen</button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-center py-4 text-muted">Nog geen projecten. Maak een nieuwe preek aan.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="mt-4 pt-3 border-top small text-muted d-flex flex-wrap gap-3">
+    <a href="{{ url_for('help_page') }}">Help</a>
+    <a href="https://github.com/rjbruin/holy-ghostwriter" target="_blank" rel="noopener">GitHub ↗</a>
+    <a href="{{ url_for('privacy_page') }}">Privacybeleid</a>
+  </footer>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export voorbeeld</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="exportPreview" class="markdown-preview"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="downloadDocxBtn" class="btn btn-primary">Download DOCX</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="apiKeyOnboardingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="onboardingTitle" class="modal-title">Stap 1: OpenRouter API key instellen</h5>
+      </div>
+      <div class="modal-body">
+        <div id="onboardingStep1">
+          <p class="mb-2">Om Holy Ghostwriter te gebruiken heb je een OpenRouter-account en API key nodig.</p>
+          <p class="mb-3">
+            Maak een account aan op
+            <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter.ai ↗</a>
+            en plak daarna je API key hieronder.
+          </p>
+          <label for="onboardingApiKeyInput" class="form-label">API key</label>
+          <input id="onboardingApiKeyInput" type="password" class="form-control" placeholder="sk-or-..." autocomplete="off">
+        </div>
+
+        <div id="onboardingStep2" class="d-none">
+          <p class="mb-3">Kies een standaard AI model voor je preken.</p>
+          <div id="onboardingModelTiles" class="d-grid gap-2"></div>
+        </div>
+
+        <div id="onboardingStep3" class="d-none">
+          <p class="mb-0">
+            Holy Ghostwriter is een AI-assistent die je helpt om preken te schrijven.
+            <br><br>
+            Belangrijk: Je berichten aan de AI gaan naar de servers van de bedrijven die deze modellen aanbieden,
+            en worden mogelijk gebruikt om nieuwe modellen op te trainen. Wees dus zorgvuldig met het invoeren
+            van informatie en deel <em>nooit</em> persoonsinformatie met de AI.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveOnboardingApiKeyBtn" class="btn btn-primary">Volgende stap</button>
+        <button id="completeOnboardingBtn" class="btn btn-primary d-none">Afronden</button>
+        <button id="onboardingShowTourBtn" class="btn btn-primary d-none">Laat me zien hoe het werkt</button>
+        <button id="onboardingSkipTourBtn" class="btn btn-outline-secondary d-none">Ik ga direct aan de slag</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update beschikbaar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Er is een nieuwe versie beschikbaar: <strong id="updateModalVersion">-</strong></p>
+        <h6 class="small text-muted">Changelog</h6>
+        <pre id="updateModalChangelog" class="meta-pre"></pre>
+      </div>
+      <div class="modal-footer">
+        <button id="ignoreUpdateBtn" class="btn btn-outline-secondary">Negeer deze versie</button>
+        <a id="openUpdateReleaseBtn" class="btn btn-primary" target="_blank" rel="noopener">Open release ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

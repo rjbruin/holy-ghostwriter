@@ -1,0 +1,47 @@
+{
+  "name": "holy-ghostwriter-desktop",
+  "version": "0.1.0",
+  "description": "Desktop wrapper voor Holy Ghostwriter",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-server-mac": "cd .. && pyinstaller desktop/server.spec --distpath desktop/server-dist --workpath desktop/pyibuild --noconfirm",
+    "build-server-win": "cd .. && pyinstaller desktop\\server.spec --distpath desktop\\server-dist --workpath desktop\\pyibuild --noconfirm",
+    "build-mac": "npm run build-server-mac && electron-builder --mac",
+    "build-win": "npm run build-server-win && electron-builder --win",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "nl.holyghostwriter.app",
+    "productName": "Holy Ghostwriter",
+    "files": [
+      "main.js"
+    ],
+    "extraResources": [
+      {
+        "from": "server-dist/server",
+        "to": "server",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

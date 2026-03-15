@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Holy Ghostwriter{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="bg-soft">
+  {% block body %}{% endblock %}
+
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Instellingen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-5">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="apiKeyInput" class="form-label mb-1">OpenRouter API key</label>
+                    <div class="input-group input-group-sm">
+                      <input id="apiKeyInput" type="password" class="form-control" placeholder="sk-or-..." autocomplete="off">
+                      <button id="saveApiKeyBtn" class="btn btn-outline-secondary" type="button">Opslaan</button>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 d-flex align-items-center gap-1">
+                      AI modellen
+                      <span tabindex="0" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="right"
+                        data-bs-content="AI modellen komen van de website OpenRouter.ai.<br><br><a href='https://openrouter.ai/models' target='_blank' rel='noopener'>Meer modellen&nbsp;&#x2197;</a><br><a href='https://openrouter.ai/settings' target='_blank' rel='noopener'>Instellingen&nbsp;&#x2197;</a><br><a href='https://openrouter.ai/settings/credits' target='_blank' rel='noopener'>Betaalgegevens&nbsp;&#x2197;</a>"
+                        style="cursor:pointer;color:#6c757d;font-size:.85rem;line-height:1" aria-label="Meer informatie over AI modellen">&#9432;</span>
+                    </h6>
+                    <div class="d-flex gap-1">
+                      <select id="modelSortField" class="form-select form-select-sm" style="width:auto">
+                        <option value="name">Naam</option>
+                        <option value="cost" selected>Kosten</option>
+                      </select>
+                      <button id="modelSortDir" class="btn btn-outline-secondary btn-sm" title="Sorteervolgorde" data-dir="asc">↑</button>
+                    </div>
+                  </div>
+                  <div id="modelsList" class="small"></div>
+                  <button class="btn btn-outline-secondary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#addModelModal">Model toevoegen</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <div id="settingsUpdateNotice" class="mb-3"></div>
+                  <h6 class="mb-3">Prompts</h6>
+                  <p class="text-muted small mb-3">Pas de instructies voor de chatbot aan. Deze worden meegegeven aan de chatbot bij het antwoorden en het genereren van preken en ideeën.</p>
+                  <ul class="nav nav-tabs" id="promptTabs" role="tablist"></ul>
+                  <div class="tab-content border border-top-0 p-3 rounded-bottom" id="promptTabContent"></div>
+                  <button id="savePromptsBtn" class="btn btn-primary btn-sm mt-3">Prompts opslaan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addModelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Model toevoegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Naam</label>
+            <input id="newModelName" class="form-control" placeholder="Bijv. Claude 3.7 Sonnet" />
+          </div>
+          <div>
+            <label class="form-label">OpenRouter slug</label>
+            <input id="newModelSlug" class="form-control" placeholder="anthropic/claude-3.7-sonnet" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuleren</button>
+          <button id="saveNewModelBtn" class="btn btn-primary">Toevoegen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editModelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Model bewerken</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input id="editModelId" type="hidden" />
+          <div class="mb-3">
+            <label class="form-label">Naam</label>
+            <input id="editModelName" class="form-control" />
+          </div>
+          <div>
+            <label class="form-label">OpenRouter slug</label>
+            <input id="editModelSlug" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuleren</button>
+          <button id="saveEditedModelBtn" class="btn btn-primary">Opslaan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="metaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">AI details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <pre id="metaContent" class="meta-pre"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="appErrorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="appErrorTitle" class="modal-title">Er ging iets mis</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="appErrorFriendly" class="mb-3"></p>
+          <h6 class="small text-muted">Technische details (delen met maintainer)</h6>
+          <pre id="appErrorDetails" class="meta-pre"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

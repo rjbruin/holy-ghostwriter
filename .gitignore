@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+data/
+prompts/
+desktop/node_modules/
+desktop/dist/
+desktop/server-dist/
+desktop/pyibuild/
+dist/
+build/
+.DS_Store
+
+api_key.txt
+
+api_key.txt

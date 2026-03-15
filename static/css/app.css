@@ -1,0 +1,167 @@
+:root {
+  --bg: #f6f3ef;
+  --card: #fffdf9;
+  --accent: #5f6f52;
+}
+
+.bg-soft {
+  background: var(--bg);
+}
+
+.card-soft {
+  background: var(--card);
+  border: 1px solid #e7dfd3;
+}
+
+.full-height {
+  height: calc(100vh - 1.5rem);
+}
+
+.chat-messages {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.msg-row {
+  display: flex;
+  margin-bottom: 0.6rem;
+}
+
+.msg-row.user {
+  justify-content: flex-end;
+}
+
+.msg-row.assistant {
+  justify-content: flex-start;
+}
+
+.msg-bubble {
+  max-width: 85%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.8rem;
+  white-space: pre-wrap;
+  cursor: pointer;
+}
+
+.msg-row.user .msg-bubble {
+  background: #dfe8d8;
+}
+
+.msg-row.assistant .msg-bubble {
+  background: #ece7df;
+}
+
+.pending-dots span {
+  animation: blink 1.2s infinite;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.pending-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pending-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
+
+.bible-display {
+  border: 1px solid #e7dfd3;
+  border-radius: .5rem;
+  padding: .75rem;
+  min-height: 2.5rem;
+  background: #faf8f4;
+  white-space: pre-wrap;
+}
+
+.meta-pre {
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.markdown-preview {
+  white-space: normal;
+}
+
+.app-title-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+}
+
+.onboarding-model-tile {
+  text-align: left;
+  border: 1px solid #d6d6d6;
+  border-radius: .5rem;
+  padding: .75rem;
+  background: #fff;
+}
+
+.onboarding-model-tile.selected {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
+}
+
+.onboarding-tour-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2000;
+}
+
+.onboarding-tour-bubble {
+  position: fixed;
+  max-width: 380px;
+  background: #fff;
+  border-radius: .6rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: .8rem;
+  z-index: 2010;
+}
+
+.onboarding-tour-highlight,
+.onboarding-tour-allowed {
+  position: relative;
+  z-index: 2020;
+}
+
+.onboarding-tour-highlight {
+  border-radius: .5rem;
+  box-shadow: 0 0 0 3px rgba(56, 182, 255, 0.85);
+  pointer-events: none;
+}
+
+.onboarding-tour-allowed {
+  pointer-events: auto;
+}
+
+.context-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e7dfd3;
+  background: #fff;
+  border-radius: .5rem;
+  padding: .45rem .6rem;
+}
+
+.model-select-tile {
+  border: 2px solid #d6d6d6;
+  border-radius: .5rem;
+  padding: .75rem;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.model-select-tile.selected {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.18);
+}
+
+.model-select-tile-body {
+  cursor: pointer;
+}
+
+.model-select-tile-body:hover {
+  opacity: 0.85;
+}

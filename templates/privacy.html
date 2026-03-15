@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Privacybeleid{% endblock %}
+{% block body %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">Privacybeleid</h1>
+
+  <p>
+    Holy Ghostwriter helpt bij preekvoorbereiding door gebruik te maken van AI-diensten van derden (OpenRouter en modelaanbieders).
+  </p>
+
+  <h2 class="h5 mt-4">Welke gegevens worden verwerkt?</h2>
+  <ul>
+    <li>Tekst die je invoert in preekvelden en chat.</li>
+    <li>Eventuele contextbestanden die je uploadt.</li>
+    <li>Technische gebruiksgegevens zoals tokenverbruik en kosten.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">Waar gaan je gegevens naartoe?</h2>
+  <p>
+    Verzoeken worden doorgestuurd naar AI-modelaanbieders via OpenRouter. Deze partijen kunnen eigen bewaartermijnen en beleidsregels hanteren.
+  </p>
+
+  <h2 class="h5 mt-4">Belangrijk advies</h2>
+  <p>
+    Voer geen persoonsgegevens, gevoelige pastorale details of vertrouwelijke informatie in die niet gedeeld mag worden.
+  </p>
+
+  <h2 class="h5 mt-4">Lokale opslag</h2>
+  <p>
+    Instellingen en preekdata worden lokaal opgeslagen in deze applicatie-installatie.
+  </p>
+
+  <a href="{{ url_for('index_page') }}" class="btn btn-outline-secondary btn-sm mt-3">Terug naar home</a>
+</div>
+{% endblock %}

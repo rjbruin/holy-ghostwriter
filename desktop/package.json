@@ -19,7 +19,8 @@
     "appId": "nl.holyghostwriter.app",
     "productName": "Holy Ghostwriter",
     "files": [
-      "main.js"
+      "main.js",
+      "favicon.svg"
     ],
     "extraResources": [
       {

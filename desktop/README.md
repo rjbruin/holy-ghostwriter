@@ -19,6 +19,31 @@ npm run build
 
 Dit bouwt een macOS (`dmg`) en Windows (`nsis`) package wanneer uitgevoerd op het betreffende platform.
 
+### macOS: “DMG is damaged” melding
+
+Als macOS meldt dat de DMG of app "beschadigd" is, is dit meestal Gatekeeper (quarantine op een niet-gesigneerde/niet-genotariseerde app), niet een echt corrupte build.
+
+Snelste workaround (lokaal testen):
+
+1. Open de DMG en sleep `Holy Ghostwriter.app` naar `/Applications`.
+2. Verwijder daarna de quarantine-flag:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Holy Ghostwriter.app"
+```
+
+3. Start de app opnieuw.
+
+Alternatief via GUI:
+- Open de app één keer (zodat macOS blokkeert).
+- Ga naar **Systeeminstellingen → Privacy en beveiliging**.
+- Klik **Open toch**.
+
+Structurele fix voor distributie:
+- Gebruik Apple code signing + notarization in de release-pipeline.
+- Zet hiervoor de benodigde secrets (zoals certificaat en Apple notarization-gegevens) in GitHub Actions.
+- Zonder signing/notarization kan macOS deze waarschuwing blijven tonen bij eindgebruikers.
+
 ### Windows installer (NSIS)
 
 De Windows-build gebruikt `electron-builder` met het target `nsis`. Je hoeft NSIS normaal niet handmatig te installeren: `electron-builder` regelt dit zelf tijdens de build.

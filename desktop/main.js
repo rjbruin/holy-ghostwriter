@@ -8,6 +8,7 @@ let flaskProcess = null;
 
 const ROOT = path.resolve(__dirname, '..');
 const APP_URL = 'http://127.0.0.1:5010';
+const APP_ICON_PATH = path.join(__dirname, 'favicon.svg');
 
 function checkServerRunning() {
   return new Promise((resolve) => {
@@ -81,28 +82,65 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 900,
+    icon: APP_ICON_PATH,
     webPreferences: {
       contextIsolation: true,
     },
   });
 
   mainWindow.loadURL(APP_URL);
+  mainWindow.webContents.on('context-menu', () => {
+    const contextTemplate = [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      { role: 'selectAll' },
+    ];
+    const contextMenu = Menu.buildFromTemplate(contextTemplate);
+    contextMenu.popup();
+  });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
 function setupContextMenu() {
-  const template = [
-    {
-      label: 'Open',
-      click: () => createMainWindow(),
-    },
-    {
-      label: 'Afsluiten',
-      click: () => app.quit(),
-    },
-  ];
+  const template = process.platform === 'darwin'
+    ? [
+      { role: 'appMenu' },
+      {
+        label: 'Bestand',
+        submenu: [
+          {
+            label: 'Open',
+            click: () => createMainWindow(),
+          },
+          { type: 'separator' },
+          { role: 'quit', label: 'Afsluiten' },
+        ],
+      },
+      { role: 'editMenu' },
+      { role: 'viewMenu' },
+      { role: 'windowMenu' },
+    ]
+    : [
+      {
+        label: 'Bestand',
+        submenu: [
+          {
+            label: 'Open',
+            click: () => createMainWindow(),
+          },
+          { type: 'separator' },
+          { role: 'quit', label: 'Afsluiten' },
+        ],
+      },
+      { role: 'editMenu' },
+      { role: 'viewMenu' },
+    ];
 
   const menu = Menu.buildFromTemplate(template);
 
@@ -138,6 +176,10 @@ app.whenReady().then(async () => {
   if (process.argv.includes('--quit')) {
     app.quit();
     return;
+  }
+
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(APP_ICON_PATH);
   }
 
   const alreadyRunning = await checkServerRunning();

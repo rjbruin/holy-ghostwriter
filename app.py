@@ -1095,4 +1095,10 @@ def healthcheck():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5010, debug=True)
+    debug_enabled = os.environ.get("HGWRITER_DEBUG", "0") == "1"
+    app.run(
+        host="127.0.0.1",
+        port=5010,
+        debug=debug_enabled,
+        use_reloader=False,
+    )

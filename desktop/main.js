@@ -1,5 +1,5 @@
 const { app, BrowserWindow, Menu, nativeImage } = require('electron');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -55,6 +55,31 @@ async function waitForServerReady(maxAttempts = 20) {
   return false;
 }
 
+function cleanupStalePackagedServers() {
+  if (!app.isPackaged || process.platform === 'win32') return;
+
+  try {
+    const binaryPath = path.join(process.resourcesPath, 'server', 'server');
+    const output = String(execFileSync('pgrep', ['-f', binaryPath], { encoding: 'utf8' }) || '').trim();
+    if (!output) return;
+
+    const pidCandidates = output
+      .split(/\s+/)
+      .map((value) => Number.parseInt(value, 10))
+      .filter((pid) => Number.isInteger(pid) && pid > 1);
+
+    const protectedPids = new Set([process.pid, flaskProcess?.pid].filter(Boolean));
+    pidCandidates.forEach((pid) => {
+      if (protectedPids.has(pid)) return;
+      try {
+        process.kill(pid, 'SIGTERM');
+      } catch {
+      }
+    });
+  } catch {
+  }
+}
+
 function startFlask() {
   if (flaskProcess) return;
 
@@ -72,6 +97,8 @@ function startFlask() {
     cwd = serverDir;
     // Point writable user data to Electron's userData directory
     env.HGWRITER_DATA_DIR = app.getPath('userData');
+    env.HGWRITER_DEBUG = '0';
+    env.FLASK_ENV = 'production';
   } else {
     // Development mode: spawn system Python
     cmd = process.platform === 'win32' ? 'python' : 'python3';
@@ -83,16 +110,36 @@ function startFlask() {
     cwd,
     env,
     stdio: 'ignore',
-    detached: false,
+    detached: process.platform !== 'win32',
   });
 
   flaskProcess.on('error', () => {
+  });
+
+  flaskProcess.on('exit', () => {
+    flaskProcess = null;
   });
 }
 
 function stopFlask() {
   if (!flaskProcess) return;
-  flaskProcess.kill();
+
+  if (process.platform !== 'win32') {
+    try {
+      process.kill(-flaskProcess.pid, 'SIGTERM');
+    } catch {
+      try {
+        flaskProcess.kill('SIGTERM');
+      } catch {
+      }
+    }
+  } else {
+    try {
+      flaskProcess.kill('SIGTERM');
+    } catch {
+    }
+  }
+
   flaskProcess = null;
 }
 
@@ -236,6 +283,7 @@ app.whenReady().then(async () => {
   const alreadyRunning = await checkServerRunning();
   if (alreadyRunning) {
   } else {
+    cleanupStalePackagedServers();
     startFlask();
     const ready = await waitForServerReady();
     if (ready) {

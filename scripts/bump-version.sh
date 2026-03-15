@@ -7,8 +7,8 @@
 # What it does:
 #   1. Updates APP_VERSION in app.py
 #   2. Updates "version" in desktop/package.json
-#   3. Commits both changes
-#   4. Creates an annotated git tag  v1.2.3
+#   3. Commits both changes (if any)
+#   4. Creates an annotated git tag  v1.2.3 (if missing)
 #
 # After running, push the tag to trigger the GitHub Actions release:
 #   git push origin main --follow-tags
@@ -51,8 +51,19 @@ echo "Updated $PKG_JSON  →  version: \"$NEW_VERSION\""
 # ── git commit + tag ────────────────────────────────────────────────────────
 cd "$ROOT"
 git add app.py desktop/package.json
-git commit -m "chore: bump version to $NEW_VERSION"
-git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+
+if git diff --cached --quiet; then
+  echo "No version file changes to commit."
+else
+  git commit -m "chore: bump version to $NEW_VERSION"
+fi
+
+if git rev-parse -q --verify "refs/tags/v$NEW_VERSION" >/dev/null; then
+  echo "Tag v$NEW_VERSION already exists; skipping tag creation."
+else
+  git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+  echo "Created tag v$NEW_VERSION."
+fi
 
 echo ""
 echo "✓ Version bumped to $NEW_VERSION and tagged as v$NEW_VERSION."

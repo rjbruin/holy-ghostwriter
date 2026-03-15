@@ -25,7 +25,9 @@
       {
         "from": "server-dist/server",
         "to": "server",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "mac": {

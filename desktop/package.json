@@ -1,6 +1,6 @@
 {
   "name": "holy-ghostwriter-desktop",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Desktop wrapper voor Holy Ghostwriter",
   "main": "main.js",
   "scripts": {

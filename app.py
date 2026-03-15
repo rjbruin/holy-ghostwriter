@@ -62,7 +62,7 @@ DEFAULT_MODELS = [
 ]
 
 DEFAULT_SELECTED_MODEL_SLUG = "nvidia/nemotron-3-super-120b-a12b:free"
-APP_VERSION = "0.1.3"
+APP_VERSION = "0.1.4"
 GITHUB_REPO = "rjbruin/holy-ghostwriter"
 
 ACTION_PROMPT_MAP = {
